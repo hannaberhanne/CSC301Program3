@@ -1,9 +1,41 @@
-import java.util.Scanner;
+/**
+ * Sudoku Solver 
+ * CSC 301: Advanced Data Structures and Algorithms 
+ * Date: Decembet 6, 2024
+ * 
+ * Contributors:
+ * - Hanna Berhane
+ * - Julius Smith
+ * - Anthony Eccleston
+ * 
+ * Description:
+ * This program implements and compares three algorithms for solving Sudoku:
+ * Breadth-First Search (BFS), Depth-Limited Search (DLS), and a Hybrid BFS-DLS.
+ * It also includes a Sudoku puzzle generator with validation for testing purposes.
+ * 
+ * Notes:
+ * - BFS and DLS implementation inspired by "Comparison Analysis of Breadth First Search and Depth Limited Search Algorithms 
+ *   in Sudoku Game," with a hybrid design adapted based on concepts from "Solving Rubik's Cube Using Graph Theory."
+ * 
+ * Citations:
+ * - Tarsa Ninia Lina, Matheus Supriyanto Rumetna. "Comparison Analysis of Breadth First Search 
+ *   and Depth Limited Search Algorithms in Sudoku Game." Bulletin of Computer Science and Electrical 
+ *   Engineering, Vol. 2, No. 2, December 2021, pp. 74-83.
+ *   [DOI: 10.25008/bcsee.v2i2.1146]
+ * - Asraful, et al. "Solving Rubik's Cube Using Graph Theory." ICCI-2017.
+ *   [ResearchGate Link: https://www.researchgate.net/publication/326749335_Solving_Rubik's_Cube_Using_Graph_Theory_ICCI-2017]
+ */
+
+package sudoku;
 
 import sudoku.BFsSolver;
 import sudoku.DLsSolver;
+import sudoku.SudokuGenerator;
+import sudoku.HybridSolver;
+import sudoku.Utils;
 
-import java.util.List; // Ensure List is imported
+import java.util.List;
+import java.util.Scanner;
 
 // Main class for the Sudoku Solver program
 public class Main {
@@ -59,17 +91,24 @@ public class Main {
             }
         }
 
+        // Print the generated puzzle
         System.out.println("\nGenerated Puzzle:");
         Utils.printSudoku(puzzle);
 
+        // Solve the puzzle
         System.out.println("\n--- Solving Generated Puzzle ---");
         solvePuzzle(puzzle);
     }
 
     // Solves a puzzle using all three solvers
     private static void solvePuzzle(int[][] puzzle) {
+        System.out.println("\nSolving using BFS...");
         solveAndMeasureTime("BFS", () -> new BFsSolver().solveWithBFS(puzzle));
+
+        System.out.println("\nSolving using DLS...");
         solveAndMeasureTime("DLS", () -> new DLsSolver().solveWithDLS(puzzle, 50));
+
+        System.out.println("\nSolving using Hybrid BFS-DLS...");
         solveAndMeasureTime("Hybrid BFS-DLS", () -> new HybridSolver().solveWithHybrid(puzzle));
     }
 
@@ -79,7 +118,15 @@ public class Main {
         long startTime = System.nanoTime();
         List<int[][]> solutions = solver.solve();
         long endTime = System.nanoTime();
+
+        // Log results
         System.out.println("Solutions found: " + solutions.size());
+        if (!solutions.isEmpty()) {
+            System.out.println("First Solution:");
+            Utils.printSudoku(solutions.get(0));
+        } else {
+            System.out.println("No solutions found.");
+        }
         System.out.println("Time taken: " + (endTime - startTime) / 1_000_000 + " ms");
     }
 

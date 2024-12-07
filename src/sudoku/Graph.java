@@ -1,10 +1,12 @@
-package src.sudoku;
+package sudoku;
+
 import java.util.*;
 
-// This class represents the Sudoku grid as a graph, where each cell is a node, 
-// and edges connect nodes based on Sudoku constraints (rows, columns, subgrids).
+// Graph class represents the Sudoku grid as a graph, where each cell is a node, and edges connect nodes based on Sudoku constraints (rows, columns, subgrids).
+// Citation: Concepts inspired by "Comparison Analysis of Breadth-First Search and Depth-Limited Search Algorithms in Sudoku Game"
+
 public class Graph {
-    private Map<Integer, List<Integer>> adjacencyList; // Tracks connections between nodes
+    private final Map<Integer, List<Integer>> adjacencyList; // Tracks connections between nodes
 
     public Graph() {
         adjacencyList = new HashMap<>();
@@ -13,7 +15,6 @@ public class Graph {
     // Adds an edge between two nodes (e.g., cells in the grid)
     public void addEdge(int from, int to) {
         adjacencyList.putIfAbsent(from, new ArrayList<>());
-        // Avoid adding duplicate edges
         if (!adjacencyList.get(from).contains(to)) {
             adjacencyList.get(from).add(to);
         }
@@ -21,7 +22,7 @@ public class Graph {
 
     // Returns all nodes connected to a given node (its "neighbors")
     public List<Integer> getNeighbors(int node) {
-        return adjacencyList.getOrDefault(node, new ArrayList<>());
+        return adjacencyList.getOrDefault(node, Collections.emptyList());
     }
 
     // Builds the graph for a Sudoku grid based on the given grid size
@@ -53,6 +54,24 @@ public class Graph {
                 }
             }
         }
+    }
+
+    // Validates the graph's structure by checking that all nodes are connected correctly
+    public boolean validateGraph(int gridSize) {
+        int totalCells = gridSize * gridSize;
+
+        for (int i = 0; i < totalCells; i++) {
+            List<Integer> neighbors = getNeighbors(i);
+            Set<Integer> uniqueNeighbors = new HashSet<>(neighbors);
+
+            // A valid Sudoku graph should have exactly 20 neighbors for each node
+            // (8 in the row, 8 in the column, and 4 in the subgrid, minus overlaps)
+            if (uniqueNeighbors.size() != 20) {
+                System.err.println("Node " + i + " has an incorrect number of neighbors: " + uniqueNeighbors.size());
+                return false;
+            }
+        }
+        return true;
     }
 
     // Prints the graph to the console (useful for debugging or testing)
