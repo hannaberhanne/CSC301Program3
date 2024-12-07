@@ -19,141 +19,143 @@ import java.util.*;
  * 
  * This implementation ensures efficient memory usage while retaining completeness.
  */
-
-public class HybridSolver {
-    private final BFsSolver bfsSolver;
-    private final DLsSolver dlsSolver;
-
-    // Constructor that reuses solvers
-    public HybridSolver() {
-        bfsSolver = new BFsSolver();
-        dlsSolver = new DLsSolver();
-    }
-
-    /**
-     * Solves the given Sudoku puzzle using a hybrid BFS-DLS approach.
-     *
-     * @param puzzle The 9x9 Sudoku puzzle to solve.
-     * @return A list of solutions found.
-     */
-    public List<int[][]> solveWithHybrid(int[][] puzzle) {
-        Queue<int[][]> queue = new LinkedList<>();
-        List<int[][]> solutions = new ArrayList<>();
-        queue.add(copyGrid(puzzle));
-
-        int depthLimit = 2;  // Initial depth limit for DLS
-        int bfsLevel = 0;    // Tracks BFS levels
-        int iterations = 0;  // Tracks the number of iterations across BFS and DLS
-        boolean solutionFound = false;
-
-        System.out.println("\n--- Starting Hybrid BFS-DLS ---");
-
-        while (!queue.isEmpty()) {
-            int size = queue.size();  // Nodes at the current BFS level
-            // Neatly format the BFS level and depth limit information
-            System.out.printf("BFS Level: %-3d | Depth Limit: %-3d | Nodes to process: %-3d%n", bfsLevel, depthLimit, size);
-
-            for (int i = 0; i < size; i++) {
-                iterations++;  // Increment iteration count
-                int[][] current = queue.poll();
-
-                // Check if the current puzzle state is solved
-                if (bfsSolver.isSolved(current)) {
-                    solutions.add(copyGrid(current));
-                    solutionFound = true;
-                    System.out.println("\nSolution found with Hybrid BFS-DLS at BFS Level " + bfsLevel + ":");
-                    Utils.printSudoku(current);
-                    continue;  // Continue to find other solutions
-                }
-
-                // Find the next empty cell to explore
-                int[] emptyCell = bfsSolver.findEmptyCell(current);
-                if (emptyCell == null) continue;
-
-                int row = emptyCell[0], col = emptyCell[1];
-
-                // Try placing numbers 1-9 in the empty cell
-                for (int num = 1; num <= 9; num++) {
-                    if (bfsSolver.isValidPlacement(current, row, col, num)) {
-                        int[][] next = copyGrid(current);
-                        next[row][col] = num;
-
-                        // Use DLS to explore deeper paths
-                        if (dlsHelper(next, depthLimit, 0, solutions, iterations)) continue;
-
-                        // Add to the BFS queue for further exploration
-                        queue.add(next);
-                    }
-                }
-            }
-
-            // Increment depth limit and BFS level as BFS progresses
-            bfsLevel++;
-            depthLimit += 2;  // Increase depth limit after each BFS level
-        }
-
-        // Log the results
-        if (solutionFound) {
-            System.out.println("\nTotal Solutions Found with Hybrid BFS-DLS: " + solutions.size());
-        } else {
-            System.out.println("\nNo solution found with Hybrid BFS-DLS.");
-        }
-        System.out.println("Hybrid BFS-DLS completed in " + iterations + " iterations.\n");
-        return solutions;
-    }
-
-    /**
-     * Recursive helper method for Depth-Limited Search (DLS).
-     *
-     * @param puzzle The current Sudoku puzzle state.
-     * @param depthLimit The maximum depth allowed.
-     * @param depth The current depth in the search.
-     * @param solutions The list to store found solutions.
-     * @param iterations Tracks the number of iterations.
-     * @return True if a solution is found, false otherwise.
-     */
-    private boolean dlsHelper(int[][] puzzle, int depthLimit, int depth, List<int[][]> solutions, int iterations) {
-        iterations++;  // Increment iteration count
-
-        if (depth > depthLimit) return false;  // Stop if depth exceeds limit
-
-        // Check if the current puzzle state is solved
-        if (dlsSolver.isSolved(puzzle)) {
-            solutions.add(copyGrid(puzzle));
-            System.out.println("\nSolution found by DLS at depth: " + depth);
-            Utils.printSudoku(puzzle);
-            return true;
-        }
-
-        // Find the next empty cell
-        int[] emptyCell = dlsSolver.findEmptyCell(puzzle);
-        if (emptyCell == null) return false;
-
-        int row = emptyCell[0], col = emptyCell[1];
-        boolean found = false;
-
-        // Try placing numbers 1-9 in the empty cell
-        for (int num = 1; num <= 9; num++) {
-            if (dlsSolver.isValidPlacement(puzzle, row, col, num)) {
-                puzzle[row][col] = num;
-                if (dlsHelper(puzzle, depthLimit, depth + 1, solutions, iterations)) found = true;
-                puzzle[row][col] = 0;  // Backtrack
-            }
-        }
-        return found;
-    }
-
-    /**
-     * Create a deep copy of the grid.
-     * 
-     * @param grid The Sudoku grid to copy.
-     * @return A new copy of the grid.
-     */
-    private int[][] copyGrid(int[][] grid) {
-        int[][] copy = new int[grid.length][grid[0].length];
-        for (int row = 0; row < grid.length; row++) {
-            System.arraycopy(grid[row], 0, copy[row], 0, grid[row].length);
-        }
-        return copy;
-    }
-}
+ 
+ public class HybridSolver {
+     private final BFsSolver bfsSolver; // Handles broad-level exploration
+     private final DLsSolver dlsSolver; // Handles focused depth exploration
+ 
+     // Constructor to set up BFS and DLS solvers
+     public HybridSolver() {
+         bfsSolver = new BFsSolver();
+         dlsSolver = new DLsSolver();
+     }
+ 
+     /**
+      * Solves a Sudoku puzzle using a hybrid of BFS and DLS.
+      * 
+      * @param puzzle The puzzle we’re solving.
+      * @return A list of solutions we found.
+      */
+     public List<int[][]> solveWithHybrid(int[][] puzzle) {
+         Queue<int[][]> queue = new LinkedList<>(); // BFS queue for managing states
+         List<int[][]> solutions = new ArrayList<>(); // Store any valid solutions
+         queue.add(copyGrid(puzzle)); // Add the starting puzzle to the queue
+ 
+         int depthLimit = 2;  // Start with a small depth limit for DLS
+         int bfsLevel = 0;    // Tracks which BFS level we’re on
+         int iterations = 0;  // Count how many states we’ve explored
+         boolean solutionFound = false;
+ 
+         System.out.println("\n--- Starting Hybrid BFS-DLS ---");
+ 
+         // Main loop for BFS
+         while (!queue.isEmpty()) {
+             int size = queue.size(); // How many nodes we’re dealing with at this level
+             System.out.printf("BFS Level: %-3d | Depth Limit: %-3d | Nodes to process: %-3d%n", bfsLevel, depthLimit, size);
+ 
+             for (int i = 0; i < size; i++) {
+                 iterations++;
+                 int[][] current = queue.poll(); // Grab the next puzzle state from the queue
+ 
+                 // Check if this state is a solved puzzle
+                 if (bfsSolver.isSolved(current)) {
+                     solutions.add(copyGrid(current)); // Save the solution
+                     solutionFound = true;
+                     System.out.println("\nSolution found at BFS Level " + bfsLevel + ":");
+                     Utils.printSudoku(current); // Print the solution
+                     continue; // Keep looking for more solutions
+                 }
+ 
+                 // Find the next empty spot in the puzzle
+                 int[] emptyCell = bfsSolver.findEmptyCell(current);
+                 if (emptyCell == null) continue; // If no empty spots, skip this state
+ 
+                 int row = emptyCell[0], col = emptyCell[1];
+ 
+                 // Try numbers 1-9 in the empty spot
+                 for (int num = 1; num <= 9; num++) {
+                     if (bfsSolver.isValidPlacement(current, row, col, num)) {
+                         int[][] next = copyGrid(current); // Make a copy of the state
+                         next[row][col] = num; // Place the number in the puzzle
+ 
+                         // Use DLS to dig deeper into promising paths
+                         if (dlsHelper(next, depthLimit, 0, solutions, iterations)) continue;
+ 
+                         // If DLS doesn’t find a solution, add this state to the BFS queue
+                         queue.add(next);
+                     }
+                 }
+             }
+ 
+             // Increase the depth limit and BFS level to keep exploring further
+             bfsLevel++;
+             depthLimit += 2; // Let DLS go deeper as BFS progresses
+         }
+ 
+         // Print results
+         if (solutionFound) {
+             System.out.println("\nTotal Solutions Found with Hybrid BFS-DLS: " + solutions.size());
+         } else {
+             System.out.println("\nNo solution found with Hybrid BFS-DLS.");
+         }
+         System.out.println("Hybrid BFS-DLS completed in " + iterations + " iterations.\n");
+         return solutions;
+     }
+ 
+     /**
+      * Recursive helper method for DLS.
+      * 
+      * @param puzzle Current state of the puzzle.
+      * @param depthLimit Max depth DLS is allowed to go.
+      * @param depth Current depth in the search.
+      * @param solutions List of valid solutions found so far.
+      * @param iterations Tracks how many states we’ve explored.
+      * @return True if a solution is found, false otherwise.
+      */
+     private boolean dlsHelper(int[][] puzzle, int depthLimit, int depth, List<int[][]> solutions, int iterations) {
+         iterations++;
+ 
+         // If we’ve hit the depth limit, stop recursion
+         if (depth > depthLimit) return false;
+ 
+         // Check if this state solves the puzzle
+         if (dlsSolver.isSolved(puzzle)) {
+             solutions.add(copyGrid(puzzle)); // Save the solution
+             System.out.println("\nSolution found by DLS at depth: " + depth);
+             Utils.printSudoku(puzzle); // Print the solution
+             return true;
+         }
+ 
+         // Find the next empty spot
+         int[] emptyCell = dlsSolver.findEmptyCell(puzzle);
+         if (emptyCell == null) return false;
+ 
+         int row = emptyCell[0], col = emptyCell[1];
+         boolean found = false;
+ 
+         // Try numbers 1-9 in the empty spot
+         for (int num = 1; num <= 9; num++) {
+             if (dlsSolver.isValidPlacement(puzzle, row, col, num)) {
+                 puzzle[row][col] = num; // Place the number
+                 // Go deeper into the search
+                 if (dlsHelper(puzzle, depthLimit, depth + 1, solutions, iterations)) found = true;
+                 puzzle[row][col] = 0; // Backtrack to try the next number
+             }
+         }
+         return found;
+     }
+ 
+     /**
+      * Makes a deep copy of the puzzle grid.
+      * 
+      * @param grid The original puzzle grid.
+      * @return A copy of the grid.
+      */
+     private int[][] copyGrid(int[][] grid) {
+         int[][] copy = new int[grid.length][grid[0].length];
+         for (int row = 0; row < grid.length; row++) {
+             System.arraycopy(grid[row], 0, copy[row], 0, grid[row].length);
+         }
+         return copy;
+     }
+ }
