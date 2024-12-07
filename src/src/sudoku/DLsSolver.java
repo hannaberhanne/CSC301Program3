@@ -1,37 +1,38 @@
+package sudoku;
 import java.util.*;
 
-// Solves Sudoku using Depth-Limited Search (DLS)
-public class DlsSolver {
+// Solver class using Depth-Limited Search (DLS) for Sudoku
+public class DLsSolver {
     public List<int[][]> solveWithDLS(int[][] puzzle, int depthLimit) {
         List<int[][]> solutions = new ArrayList<>();
         dlsHelper(puzzle, depthLimit, 0, solutions);
-
-        if (solutions.isEmpty()) {
-            System.out.println("No solution found with DLS.");
-        } else {
+        if (!solutions.isEmpty()) {
             System.out.println("Total DLS Solutions Found: " + solutions.size());
+        } else {
+            System.out.println("No solution found with DLS.");
         }
-
         return solutions;
     }
 
     private boolean dlsHelper(int[][] puzzle, int depthLimit, int depth, List<int[][]> solutions) {
-        if (depth > depthLimit) return false; // Stop if depth exceeds the limit
+        if (depth > depthLimit) return false;
 
         if (isSolved(puzzle)) {
-            solutions.add(copyGrid(puzzle)); // Save the solution
+            solutions.add(copyGrid(puzzle));
             return true;
         }
 
         int[] emptyCell = findEmptyCell(puzzle);
         if (emptyCell == null) return false;
 
+        int row = emptyCell[0], col = emptyCell[1];
         boolean found = false;
+
         for (int num = 1; num <= 9; num++) {
-            if (isValidPlacement(puzzle, emptyCell[0], emptyCell[1], num)) {
-                puzzle[emptyCell[0]][emptyCell[1]] = num;
+            if (isValidPlacement(puzzle, row, col, num)) {
+                puzzle[row][col] = num;
                 if (dlsHelper(puzzle, depthLimit, depth + 1, solutions)) found = true;
-                puzzle[emptyCell[0]][emptyCell[1]] = 0; // Backtrack
+                puzzle[row][col] = 0; // Backtrack
             }
         }
         return found;

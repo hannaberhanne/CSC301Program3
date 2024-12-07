@@ -1,3 +1,4 @@
+package src.sudoku;
 import java.util.*;
 
 // Generates Sudoku puzzles based on difficulty level

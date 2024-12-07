@@ -1,3 +1,4 @@
+package src.sudoku;
 public class Utils {
     // Prints the Sudoku grid in a readable format
     public static void printSudoku(int[][] puzzle) {

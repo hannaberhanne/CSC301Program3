@@ -1,5 +1,8 @@
 // Base class to integrate all solvers
+package sudoku;
 import java.util.List;
+import sudoku.BfsSolver;
+import sudoku.DlsSolver;
 public class SudokuSolverBase {
     private final BfsSolver bfsSolver;
     private final DlsSolver dlsSolver;

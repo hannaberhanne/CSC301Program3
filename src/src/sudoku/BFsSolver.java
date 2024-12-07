@@ -1,55 +1,53 @@
+package src.sudoku;
 import java.util.*;
 
-// Solves Sudoku using a Hybrid BFS-DLS approach
-public class HybridSolver {
-    public List<int[][]> solveWithHybrid(int[][] puzzle) {
+// Solver class using Breadth-First Search (BFS) for Sudoku
+public class BFsSolver {
+    public List<int[][]> solveWithBFS(int[][] puzzle) {
         Queue<int[][]> queue = new LinkedList<>();
         List<int[][]> solutions = new ArrayList<>();
         queue.add(copyGrid(puzzle));
+        boolean solutionFound = false;
 
-        int depthLimit = 2; // Initial depth limit for DLS
         while (!queue.isEmpty()) {
             int[][] current = queue.poll();
 
             if (isSolved(current)) {
                 solutions.add(copyGrid(current));
+                solutionFound = true;
                 continue;
             }
 
             int[] emptyCell = findEmptyCell(current);
             if (emptyCell == null) continue;
 
-            for (int num = 1; num <= 9; num++) {
-                if (isValidPlacement(current, emptyCell[0], emptyCell[1], num)) {
-                    int[][] next = copyGrid(current);
-                    next[emptyCell[0]][emptyCell[1]] = num;
+            int row = emptyCell[0], col = emptyCell[1];
 
-                    if (dlsHelper(next, depthLimit, 0)) continue;
+            for (int num = 1; num <= 9; num++) {
+                if (isValidPlacement(current, row, col, num)) {
+                    int[][] next = copyGrid(current);
+                    next[row][col] = num;
                     queue.add(next);
                 }
             }
-            depthLimit++;
         }
 
-        if (solutions.isEmpty()) System.out.println("No solution found with Hybrid BFS-DLS.");
+        if (solutionFound) {
+            System.out.println("Total BFS Solutions Found: " + solutions.size());
+        } else {
+            System.out.println("No solution found with BFS.");
+        }
+
         return solutions;
     }
 
-    private boolean dlsHelper(int[][] puzzle, int depthLimit, int depth) {
-        if (depth > depthLimit) return false;
-        if (isSolved(puzzle)) return true;
-
-        int[] emptyCell = findEmptyCell(puzzle);
-        if (emptyCell == null) return false;
-
-        for (int num = 1; num <= 9; num++) {
-            if (isValidPlacement(puzzle, emptyCell[0], emptyCell[1], num)) {
-                puzzle[emptyCell[0]][emptyCell[1]] = num;
-                if (dlsHelper(puzzle, depthLimit, depth + 1)) return true;
-                puzzle[emptyCell[0]][emptyCell[1]] = 0; // Backtrack
+    private boolean isSolved(int[][] grid) {
+        for (int[] row : grid) {
+            for (int cell : row) {
+                if (cell == 0) return false;
             }
         }
-        return false;
+        return true;
     }
 
     private int[] findEmptyCell(int[][] grid) {
@@ -77,14 +75,5 @@ public class HybridSolver {
             System.arraycopy(grid[row], 0, copy[row], 0, grid[row].length);
         }
         return copy;
-    }
-
-    private boolean isSolved(int[][] grid) {
-        for (int[] row : grid) {
-            for (int cell : row) {
-                if (cell == 0) return false;
-            }
-        }
-        return true;
     }
 }

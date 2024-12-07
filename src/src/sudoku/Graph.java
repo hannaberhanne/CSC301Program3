@@ -1,3 +1,4 @@
+package src.sudoku;
 import java.util.*;
 
 // This class represents the Sudoku grid as a graph, where each cell is a node, 

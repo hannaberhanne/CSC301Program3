@@ -1,4 +1,9 @@
-import java.util.*;
+import java.util.Scanner;
+
+import sudoku.BFsSolver;
+import sudoku.DLsSolver;
+
+import java.util.List; // Ensure List is imported
 
 // Main class for the Sudoku Solver program
 public class Main {
@@ -8,7 +13,7 @@ public class Main {
 
         try {
             while (true) {
-                // Show menu options
+                // Display menu options
                 System.out.println("\nMenu:");
                 System.out.println("1. Generate and solve a new puzzle");
                 System.out.println("2. Exit");
@@ -62,58 +67,13 @@ public class Main {
     }
 
     // Solves a puzzle using all three solvers
-  // Solves a puzzle using all three solvers
-private static void solvePuzzle(int[][] puzzle) {
-    // Validate the puzzle
-    if (!isPuzzleValid(puzzle)) {
-        System.out.println("The provided puzzle is invalid. Please check the input.");
-        return;
-    }
-
-    try {
-        // Solve using Breadth-First Search (BFS)
-        System.out.println("\n--- Solving with BFS ---");
-        solveAndMeasureTime("BFS", () -> new BfsSolver().solveWithBFS(puzzle));
-
-        // Solve using Depth-Limited Search (DLS)
-        System.out.println("\n--- Solving with DLS ---");
-        solveAndMeasureTime("DLS", () -> new DlsSolver().solveWithDLS(puzzle, 50));
-
-        // Solve using Hybrid BFS-DLS
-        System.out.println("\n--- Solving with Hybrid BFS-DLS ---");
+    private static void solvePuzzle(int[][] puzzle) {
+        solveAndMeasureTime("BFS", () -> new BFsSolver().solveWithBFS(puzzle));
+        solveAndMeasureTime("DLS", () -> new DLsSolver().solveWithDLS(puzzle, 50));
         solveAndMeasureTime("Hybrid BFS-DLS", () -> new HybridSolver().solveWithHybrid(puzzle));
-
-    } catch (Exception e) {
-        // Catch any unexpected exceptions and print a user-friendly message
-        System.err.println("An error occurred while solving the puzzle: " + e.getMessage());
-    }
-}
-
-// Helper method to validate the Sudoku puzzle
-private static boolean isPuzzleValid(int[][] puzzle) {
-    // Check for null or empty puzzle
-    if (puzzle == null || puzzle.length != 9 || puzzle[0].length != 9) {
-        return false;
     }
 
-    // Check each cell for valid values (0-9)
-    for (int row = 0; row < 9; row++) {
-        for (int col = 0; col < 9; col++) {
-            int value = puzzle[row][col];
-            if (value < 0 || value > 9) {
-                return false;
-        solveAndMeasureTime("DLS", () -> new DlsSolver().solveWithDLS(puzzle, 50));
-        
-                // Solve using Hybrid BFS-DLS
-                solveAndMeasureTime("Hybrid BFS-DLS", () -> new HybridSolver().solveWithHybrid(puzzle));
-            }
-        
-            private static void solveAndMeasureTime(String solverName, Main.SolverMethod solver) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'solveAndMeasureTime'");
-            }
-        
-            // Measure execution time of solvers
+    // Utility method to measure and display the time taken by a solver
     private static void solveAndMeasureTime(String solverName, SolverMethod solver) {
         System.out.println("\nUsing " + solverName + "...");
         long startTime = System.nanoTime();
